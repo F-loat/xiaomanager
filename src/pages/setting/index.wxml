@@ -1,0 +1,33 @@
+<!--index.wxml-->
+<navigation-bar back title="配置" />
+
+<text wx:if="{{notice.text}}"  class="px-2 py-1 mb-2 bg-[#fcf6ed] text-[#de8c17] dark:bg-opacity-40 dark:text-white text-xs truncate" bind:tap="handleNotice">{{notice.text}}</text>
+
+<scroll-view class="flex-1 overflow-y-hidden px-4 box-border" scroll-y show-scrollbar="{{false}}">
+  <xiao-cell>
+		<view>内网服务地址</view>
+		<input class="flex-1 ml-2 -mb-1" value="{{serverConfig.privateDomain}}" placeholder="请输入" data-name="privateDomain" bind:input="handleFormChange"></input>
+	</xiao-cell>
+	<xiao-cell>
+		<view>公网服务地址</view>
+		<input class="flex-1 ml-2 -mb-1" value="{{serverConfig.publicDomain}}"  placeholder="请输入" data-name="publicDomain" bind:input="handleFormChange"></input>
+	</xiao-cell>
+  <xiao-cell>
+    <view>控制台账户</view>
+    <input class="flex-1 ml-2 -mb-1" value="{{serverConfig.username}}" placeholder="请输入" data-name="username" bind:input="handleFormChange"></input>
+  </xiao-cell>
+  <xiao-cell>
+    <view>控制台密码</view>
+    <input class="flex-1 ml-2 -mb-1" password value="{{serverConfig.password}}" placeholder="请输入" data-name="password" bind:input="handleFormChange"></input>
+  </xiao-cell>
+	<view class="flex justify-center mb-3">
+		<button open-type="share" class="bg-white dark:bg-gray-800/40">分享配置</button>
+		<button style="margin-left: 12px" class="bg-white dark:bg-gray-800/40" bind:tap="handleSaveConfig">保存配置</button>
+	</view>
+	<xiao-cell extClass="justify-between">
+		<view>首页任务</view>
+		<switch class="scale-75" type="checkbox" checked="{{homeDevices}}"  bind:change="handleHomeDevicesChange" />
+	</xiao-cell>
+	<ad-custom wx:if="{{ADUnitId && version}}" unit-id="{{ADUnitId}}" />
+	<github-link title="F-loat/xiaomanager" link="https://github.com/F-loat/xiaomanager" />
+</scroll-view>

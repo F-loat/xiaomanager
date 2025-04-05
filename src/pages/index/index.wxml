@@ -1,0 +1,56 @@
+<!--index.wxml-->
+<template name="setting">
+  <navigator slot="right" url="/pages/setting/index"
+    class="w-full h-full rounded-full border-[0.5px] border-solid border-black border-opacity-10 box-border flex justify-center items-center bg-white bg-opacity-60 dark:bg-black dark:border-white dark:bg-opacity-10 dark:border-opacity-30" hover-class="bg-gray-200">
+    <image src="/assets/icon/shezhi.svg" class="w-3/5 h-3/5 invert-icon" />
+  </navigator>
+</template>
+
+<navigation-bar back="{{path && path !== '/'}}" title="卯卯文件" bind:titletap="handleSwitchDomain">
+  <template is="setting" />
+</navigation-bar>
+
+<scroll-view id="scrollview" class="flex-1 overflow-y-hidden px-3 box-border" scroll-y refresher-enabled
+  bind:scrolltolower="handleLoadMore" type="list" show-scrollbar="{{false}}" bind:refresherrefresh="handleRefresh">
+  <search-bar placeholder="请输入关键词" btnText="播放" bind:change="handleFilter" bind:search="handleSearch" bind:playtext="handlePlayText">
+    <view wx:if="{{isPC}}" class="h-7 w-7 ml-2">
+      <template is="setting" />
+    </view>
+  </search-bar>
+
+  <config
+    wx:if="{{!connected}}"
+    class="h-3/4"
+    error="{{error}}"
+    bind:refresh="fetchList"
+    bind:switch="handleSwitchDomain"
+  />
+
+  <block wx:elif="{{list.length}}">
+    <view class="text-base font-bold mb-2">🏠主页{{path}}</view>
+
+    <task-list wx:if="{{!path}}" />
+
+    <music-item
+      wx:for="{{list}}"
+      wx:key="name"
+      title="{{item.name}}"
+      description="{{item.modified}}"
+      icon="{{item.icon}}"
+      subTitle="{{item.is_dir ? null : item.size}}"
+      index="{{index}}"
+      data-name="{{item.name}}"
+      data-is_dir="{{item.is_dir}}"
+      operation
+      bind:tap="handleViewTap"
+      bind:operation="handleListOperation"
+    />
+  </block>
+</scroll-view>
+
+<view wx:if="{{!!tempFile}}" class="fixed bottom-12 right-4 bg-white shadow rounded px-4 py-2 text-sm text-gray-500">
+  <view class="flex items-center" bind:tap="handlePasteFile">
+    <image src="/assets/icon/paste.svg" class="w-4 h-4 opacity-60 invert-icon" />
+    <text class="ml-1">粘贴到此处</text>
+  </view>
+</view>

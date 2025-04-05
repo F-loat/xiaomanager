@@ -1,0 +1,7 @@
+<view class="flex items-start mb-6">
+  <image class="w-5 h-5 mt-1" src="/assets/icon/detail/{{icon}}.svg" />
+  <view class="ml-2">
+    <view class="font-semibold text-gray-700 dark:text-gray-200">{{label}}</view>
+    <view class="text-gray-600 dark:text-gray-300 mt-0.5">{{value}}</view>
+  </view>
+</view>

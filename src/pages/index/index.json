@@ -1,0 +1,9 @@
+{
+  "$schema": "https://vite.icebreaker.top/page.json",
+  "usingComponents": {
+    "music-item": "/components/music-item/music-item",
+    "navigation-bar": "/components/navigation-bar/navigation-bar",
+    "config": "./components/config/config",
+    "task-list": "./components/task-list/task-list"
+  }
+}

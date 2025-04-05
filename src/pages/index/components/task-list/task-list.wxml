@@ -1,0 +1,57 @@
+<view class="mb-2 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+  <view class="px-4 py-3 flex items-center justify-between">
+    <view class="font-semibold">{{visibleTasks.length ? '任务列表' : '暂无任务'}}</view>
+    <view class="text-xs opacity-60 flex items-center" bind:tap="handleSwitchType">
+      <text wx:if="{{taskType === 'copy'}}">复制</text>
+      <text wx:if="{{taskType === 'decompress'}}">解压</text>
+      <text wx:if="{{taskType === 'offline_download'}}">离线下载</text>
+      <text wx:if="{{taskType === 'upload'}}">上传</text>
+      <image class="w-3 h-3 -mb-0.5 invert-icon" src="/assets/icon/gengduo.svg" />
+    </view>
+  </view>
+
+  <view wx:if="{{visibleTasks.length}}">
+    <view
+      wx:for="{{visibleTasks}}"
+      wx:key="{{item.id}}"
+      class="px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-750/50 transition-colors border-t border-x-0 border-b-0 border-solid border-gray-100 dark:border-gray-700"
+      bind:tap="handleTaskClick"
+      data-id="{{item.id}}"
+      data-status="{{item.status}}"
+    >
+      <view class="flex items-center mb-1.5">
+        <view class="flex flex-1 items-center">
+          <image wx:if="{{item.status === 'completed'}}" class="w-4 h-4" src="/assets/icon/task/success.svg" />
+          <image wx:if="{{item.status === 'pending'}}" class="w-4 h-4" src="/assets/icon/task/waiting.svg" />
+          <image wx:if="{{item.status === 'copying'}}" class="w-4 h-4" src="/assets/icon/task/progress.svg" />
+          <image wx:if="{{item.status === 'failed'}}" class="w-4 h-4" src="/assets/icon/task/error.svg" />
+          <text overflow="ellipsis" class="ml-2 flex-1 font-medium text-sm text-gray-900 dark:text-gray-100">{{item.filename}}</text>
+        </view>
+        <view class="flex items-center shrink-0">
+          <view wx:if="{{item.speed}}" class="font-mono text-xs text-blue-600 dark:text-blue-400">{{item.speed}}</view>
+          <view class="ml-2 text-xs text-gray-500 dark:text-gray-400">{{item.size}}</view>
+        </view>
+      </view>
+
+      <view class="relative flex items-center">
+        <view class="flex-1 overflow-hidden h-1.5 rounded bg-gray-100 dark:bg-gray-700">
+          <view
+            style="width: {{item.progress}}%"
+            class="h-full transition-all duration-300 {{item.classNames}}"
+          />
+        </view>
+        <view class="ml-1 text-xs font-medium text-gray-600 dark:text-gray-300 min-w-[35px] text-right">
+          {{item.progress}}%
+        </view>
+      </view>
+    </view>
+
+    <view
+      wx:if="{{!showAllTasks && tasks.length > 2}}"
+      bind:tap="setShowAllTasks"
+      class="w-full py-2 flex items-center justify-center text-sm text-blue-600 dark:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-750/50 transition-colors"
+    >
+      查看所有
+    </view>
+  </view>
+</view>
