@@ -46,6 +46,25 @@
       bind:operation="handleListOperation"
     />
   </block>
+
+  <block wx:if="{{!path && !!starFiles.length}}">
+    <view class="text-base font-bold mb-2">收藏列表</view>
+
+    <music-item
+      wx:for="{{starFiles}}"
+      wx:key="path"
+      title="{{item.name}}"
+      description="{{item.originName}}"
+      icon="{{item.icon}}"
+      index="{{index}}"
+      data-name="{{item.name}}"
+      data-is_dir="{{item.is_dir}}"
+      data-path="{{item.path}}"
+      operation
+      bind:tap="handleViewTap"
+      bind:operation="handleStarOperation"
+    />
+  </block>
 </scroll-view>
 
 <view wx:if="{{!!tempFile}}" class="fixed bottom-12 right-4 bg-white shadow rounded px-4 py-2 text-sm text-gray-500">

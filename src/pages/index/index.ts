@@ -63,21 +63,24 @@ ComponentWithStore({
   storeBindings: [
     {
       store,
-      fields: ['serverConfig', 'isPC', 'tempFile'] as const,
+      fields: ['serverConfig', 'isPC', 'tempFile', 'starFiles'] as const,
       actions: [] as const,
     },
   ],
   lifetimes: {
     attached() {
-      this.fetchList();
+      this.fetchList(true);
     },
   },
   methods: {
-    async fetchList(retry = false) {
+    async fetchList(refresh = false, retry = false) {
       try {
         wx.showLoading({
           title: '加载中',
         });
+        if (refresh) {
+          this.data._page = 1;
+        }
         const { path } = this.properties;
         const res = await request<{
           content: Item[];
@@ -91,31 +94,6 @@ ComponentWithStore({
             per_page: 50,
           },
         });
-        if (res.code === 401) {
-          if (retry) {
-            wx.showModal({
-              title: '鉴权失败',
-              content: '请确认账号密码是否配置正确',
-              success: (res) => {
-                if (!res.confirm) return;
-                wx.navigateTo({
-                  url: '/pages/setting/index',
-                });
-              },
-            });
-            throw new Error('401 Unauthorized');
-          } else {
-            await store.updateServerConfig(store.serverConfig);
-            await this.fetchList(true);
-            return;
-          }
-        }
-        if (res.code !== 200) {
-          wx.showToast({
-            title: res.message,
-            icon: 'none',
-          });
-        }
         if (!res.data) {
           return;
         }
@@ -132,6 +110,25 @@ ComponentWithStore({
           total: res.data.total,
         });
       } catch (err) {
+        if (err.code === 401) {
+          if (retry) {
+            wx.showModal({
+              title: '鉴权失败',
+              content: '请确认账号密码是否配置正确',
+              success: (res) => {
+                if (!res.confirm) return;
+                wx.navigateTo({
+                  url: '/pages/setting/index',
+                });
+              },
+            });
+            throw new Error('401 Unauthorized');
+          } else {
+            await store.updateServerConfig(store.serverConfig);
+            await this.fetchList(true, true);
+            return;
+          }
+        }
         const message = (err as { errMsg: string }).errMsg || '';
         if (!this.data.list.length) {
           this.setData({
@@ -169,8 +166,7 @@ ComponentWithStore({
         .node()
         .exec(async (res) => {
           const scrollView = res[0].node;
-          this.data._page = 1;
-          await this.fetchList();
+          await this.fetchList(true);
           scrollView.closeRefresh();
           wx.showToast({
             title: '列表刷新成功',
@@ -194,7 +190,7 @@ ComponentWithStore({
         title: '网络切换中',
       });
       await store.updateServerConfig(config);
-      this.fetchList();
+      this.fetchList(true);
       wx.hideLoading();
       wx.showToast({
         title: isPrivate ? '已切换为公网连接' : '已切换为内网连接',
@@ -205,19 +201,20 @@ ComponentWithStore({
       currentTarget: {
         dataset: {
           name: string;
+          path?: string;
           is_dir: boolean;
         };
       };
     }) {
-      const { name, is_dir } = e.currentTarget.dataset;
-      const { path } = this.properties;
+      const { name, is_dir, path } = e.currentTarget.dataset;
+      const target = path || `${this.properties.path}/${name}`;
       if (is_dir) {
         wx.navigateTo({
-          url: `/pages/index/index?path=${path}/${name}`,
+          url: `/pages/index/index?path=${target}`,
         });
       } else {
         wx.navigateTo({
-          url: `/pages/player/player?path=${path}/${name}`,
+          url: `/pages/player/player?path=${target}`,
         });
       }
     },
@@ -228,9 +225,11 @@ ComponentWithStore({
         index: number;
       };
     }) {
-      const name = e.detail.value;
+      const { value: name, index } = e.detail;
       const items = [
+        { label: '重命名', value: 'rename' },
         { label: '复制', value: 'copy' },
+        { label: '收藏', value: 'star' },
         { label: '删除', value: 'delete' },
       ];
 
@@ -240,8 +239,14 @@ ComponentWithStore({
         success: (res) => {
           const { value } = items[res.tapIndex];
           switch (value) {
+            case 'rename':
+              this.handleRenameFile(name);
+              break;
             case 'copy':
               this.handleCopyFile(name);
+              break;
+            case 'star':
+              this.handleStarFile(name, this.data.list[index]?.is_dir);
               break;
             case 'delete':
               this.handleRemoveFile(name);
@@ -252,12 +257,91 @@ ComponentWithStore({
         },
       });
     },
+    handleStarOperation(e: {
+      detail: {
+        value: string;
+        index: number;
+      };
+    }) {
+      const { value: name, index } = e.detail;
+      const items = [
+        { label: '重命名', value: 'rename' },
+        { label: '移除', value: 'remove' },
+      ];
+
+      wx.showActionSheet({
+        alertText: '操作',
+        itemList: items.map((i) => i.label),
+        success: (res) => {
+          const { value } = items[res.tapIndex];
+          switch (value) {
+            case 'rename':
+              wx.showModal({
+                title: '请输入新名称',
+                content: name,
+                editable: true,
+                success: async (res) => {
+                  if (!res.confirm || !res.content) return;
+                  if (res.content === name) return;
+                  store.renameStreFile(index, res.content);
+                },
+              });
+              break;
+            case 'remove':
+              store.removeStreFile(index);
+              break;
+            default:
+              break;
+          }
+        },
+      });
+    },
+    handleRenameFile(name: string) {
+      wx.showModal({
+        title: '请输入新名称',
+        content: name,
+        editable: true,
+        success: async (res) => {
+          if (!res.confirm || !res.content) return;
+          if (res.content === name) return;
+          const { path } = this.properties;
+          try {
+            await request<{
+              raw_url: string;
+            }>({
+              url: '/api/fs/rename',
+              method: 'POST',
+              data: {
+                name: res.content,
+                overwrite: false,
+                path: `${path}/${name}`,
+              },
+            });
+            await this.fetchList(true);
+          } catch (err) {
+            wx.showToast({
+              title: err.message,
+              icon: 'none',
+            });
+          }
+        },
+      });
+    },
     handleCopyFile(name: string) {
       store.setData({
         tempFile: {
           dir: this.properties.path,
           names: [name],
         },
+      });
+    },
+    handleStarFile(name: string, is_dir: boolean) {
+      const { path } = this.properties;
+      store.addStreFile({
+        name,
+        path: `${path}/${name}`,
+        is_dir,
+        icon: getIcomName(name, is_dir),
       });
     },
     handleRemoveFile(name: string) {
@@ -277,7 +361,7 @@ ComponentWithStore({
               names: [name],
             },
           });
-          await this.fetchList();
+          await this.fetchList(true);
         },
       });
     },
@@ -298,7 +382,7 @@ ComponentWithStore({
       store.setData({
         tempFile: undefined,
       });
-      this.fetchList();
+      this.fetchList(true);
     },
   },
 });

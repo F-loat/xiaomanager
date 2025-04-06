@@ -104,11 +104,18 @@ export const request = <T>({ url, method, data, timeout }: RequestParams) => {
       data,
       timeout,
     };
+    const handleResult = (result: Result) => {
+      if (result.code === 200) {
+        resolve(result);
+      } else {
+        reject(result);
+      }
+    };
     if (domain === privateDomain) {
       wx.request({
         ...options,
         header,
-        success: (res) => resolve(res.data as Result),
+        success: (res) => handleResult(res.data as Result),
         fail: reject,
       });
     } else {
@@ -119,7 +126,7 @@ export const request = <T>({ url, method, data, timeout }: RequestParams) => {
           ...options,
           headers: header,
         },
-        success: (res) => resolve(res.result as Result),
+        success: (res) => handleResult(res.result as Result),
         fail: reject,
       });
     }
