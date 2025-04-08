@@ -1,4 +1,4 @@
-import { store } from '@/stores';
+import { SHARE_COVER, SLOGAN, store } from '@/stores';
 import { formatFileSize, formatTime, getFileType } from '@/utils';
 import { request } from '@/utils/request';
 import { ComponentWithStore } from 'mobx-miniprogram-bindings';
@@ -66,6 +66,11 @@ ComponentWithStore({
       fields: ['serverConfig', 'isPC', 'tempFile', 'starFiles'] as const,
       actions: [] as const,
     },
+    {
+      store: store.feature,
+      fields: ['homeTasks'] as const,
+      actions: [] as const,
+    },
   ],
   lifetimes: {
     attached() {
@@ -73,6 +78,18 @@ ComponentWithStore({
     },
   },
   methods: {
+    onShareAppMessage() {
+      return {
+        title: SLOGAN,
+        imageUrl: SHARE_COVER,
+      };
+    },
+    onShareTimeline() {
+      return {
+        title: SLOGAN,
+        imageUrl: SHARE_COVER,
+      };
+    },
     async fetchList(refresh = false, retry = false) {
       try {
         wx.showLoading({

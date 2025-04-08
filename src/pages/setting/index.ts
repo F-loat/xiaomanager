@@ -18,6 +18,11 @@ ComponentWithStore({
       fields: ['did', 'version'] as const,
       actions: [] as const,
     },
+    {
+      store: store.feature,
+      fields: ['homeTasks'] as const,
+      actions: [] as const,
+    },
   ],
   lifetimes: {
     attached() {
@@ -105,10 +110,12 @@ ComponentWithStore({
       await store.updateServerConfig(config);
       wx.reLaunch({ url: '/pages/index/index' });
     },
-    navigateToMore() {
-      wx.navigateTo({
-        url: '/pages/setting/more',
-      });
+    handleHomeTasksChange(e: {
+      detail: {
+        value: boolean;
+      };
+    }) {
+      store.feature.setHomeTasks(e.detail.value);
     },
   },
 });

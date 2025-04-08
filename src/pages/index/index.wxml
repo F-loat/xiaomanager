@@ -29,7 +29,7 @@
   <block wx:elif="{{list.length}}">
     <view class="text-base font-bold mb-2">🏠主页{{path}}</view>
 
-    <task-list wx:if="{{!path}}" />
+    <task-list wx:if="{{homeTasks && !path}}" />
 
     <music-item
       wx:for="{{list}}"
@@ -47,7 +47,7 @@
     />
   </block>
 
-  <block wx:if="{{!path && !!starFiles.length}}">
+  <block wx:if="{{!path && starFiles.length && list.length}}">
     <view class="text-base font-bold mb-2">收藏列表</view>
 
     <music-item

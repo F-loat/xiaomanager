@@ -26,8 +26,9 @@
 	</view>
 	<xiao-cell extClass="justify-between">
 		<view>首页任务</view>
-		<switch class="scale-75" type="checkbox" checked="{{homeDevices}}"  bind:change="handleHomeDevicesChange" />
+		<switch class="scale-75" type="checkbox" checked="{{homeTasks}}"  bind:change="handleHomeTasksChange" />
 	</xiao-cell>
+	<task-list wx:if="{{!homeTasks}}" />
 	<ad-custom wx:if="{{ADUnitId && version}}" unit-id="{{ADUnitId}}" />
 	<github-link title="F-loat/xiaomanager" link="https://github.com/F-loat/xiaomanager" />
 </scroll-view>

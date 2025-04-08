@@ -2,6 +2,7 @@ import { ServerConfig } from '@/types';
 import { hashPwd } from '@/utils';
 import { request } from '@/utils/request';
 import { makeAutoObservable } from 'mobx-miniprogram';
+import { FeatureModule } from './modules/feature';
 
 const { platform } = wx.getDeviceInfo();
 
@@ -12,6 +13,10 @@ interface StarFile {
   is_dir: boolean;
   icon?: string;
 }
+
+export const SLOGAN = 'AList小程序，轻松管理云端文件';
+export const SHARE_COVER =
+  'https://assets-1251785959.cos.ap-beijing.myqcloud.com/xiaomanager/cover.png';
 
 export class Store {
   isPC =
@@ -27,8 +32,12 @@ export class Store {
 
   starFiles: StarFile[] = wx.getStorageSync('starFiles') || [];
 
+  feature: FeatureModule;
+
   constructor() {
     makeAutoObservable(this);
+
+    this.feature = new FeatureModule(this);
   }
 
   setData = (values: any) => {
